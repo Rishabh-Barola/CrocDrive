@@ -20,46 +20,57 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   output mgr_obi_req_t user_mgr_obi_req_o, // User Mgr (req_o), Croc Sbr (rsp_i)
   input  mgr_obi_rsp_t user_mgr_obi_rsp_i,
 
-  input  logic [      GpioCount-1:0] gpio_in_sync_i, // synchronized GPIO inputs
-  output logic [NumExternalIrqs-1:0] interrupts_o    // interrupts to core
+  input  logic [GpioCount-1:0] gpio_in_sync_i,
+
+  output logic [GpioCount-1:0] amcp_gpio_o,
+  output logic [GpioCount-1:0] amcp_gpio_out_en_o,
+  output logic [GpioCount-1:0] amcp_gpio_override_o,
+
+  output logic [NumExternalIrqs-1:0] interrupts_o
 );
 
   assign interrupts_o = '0;
 
-
   //////////////////////
   // User Manager MUX //
-  /////////////////////
+  //////////////////////
 
-  // No manager so we don't need a obi_mux module and just terminate the request properly
+  // No user-domain manager in this project stage.
   assign user_mgr_obi_req_o = '0;
+
+  // ref_clk_i and user_mgr_obi_rsp_i are unused for the PWM-only design.
+  logic unused_ref_clk;
+  assign unused_ref_clk = ref_clk_i;
 
 
   ////////////////////////////
   // User Subordinate DEMUX //
   ////////////////////////////
 
-  // ----------------------------------------------------------------------------------------------
-  // User Subordinate Buses
-  // ----------------------------------------------------------------------------------------------
-
-  // collection of signals from the demultiplexer
   sbr_obi_req_t [NumDemuxSbr-1:0] all_user_sbr_obi_req;
   sbr_obi_rsp_t [NumDemuxSbr-1:0] all_user_sbr_obi_rsp;
 
-  // Error Subordinate Bus
+  // Error subordinate bus
   sbr_obi_req_t user_error_obi_req;
   sbr_obi_rsp_t user_error_obi_rsp;
 
-  // OBI bus to your design
-  sbr_obi_req_t user_design_obi_req;
-  sbr_obi_rsp_t user_design_obi_rsp;
+  // User ROM bus
+  sbr_obi_req_t user_rom_obi_req;
+  sbr_obi_rsp_t user_rom_obi_rsp;
 
-  // Fanout into more readable signals
-  assign user_error_obi_req               = all_user_sbr_obi_req[UserError];
-  assign all_user_sbr_obi_rsp[UserError]  = user_error_obi_rsp;
-  assign user_design_obi_req              = all_user_sbr_obi_req[UserDesign];
-  assign all_user_sbr_obi_rsp[UserDesign] = user_design_obi_rsp;
+  // AMCP bus
+  sbr_obi_req_t user_amcp_obi_req;
+  sbr_obi_rsp_t user_amcp_obi_rsp;
+
+  // Fanout into readable signals
+  assign user_error_obi_req              = all_user_sbr_obi_req[UserError];
+  assign all_user_sbr_obi_rsp[UserError] = user_error_obi_rsp;
+
+  assign user_rom_obi_req              = all_user_sbr_obi_req[UserRom];
+  assign all_user_sbr_obi_rsp[UserRom] = user_rom_obi_rsp;
+
+  assign user_amcp_obi_req              = all_user_sbr_obi_req[UserAmcp];
+  assign all_user_sbr_obi_rsp[UserAmcp] = user_amcp_obi_rsp;
 
 
   //-----------------------------------------------------------------------------------------------
@@ -103,28 +114,41 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   );
 
 
-//-------------------------------------------------------------------------------------------------
-// User Subordinates
-//-------------------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------------------------
+  // User Subordinates
+  //-------------------------------------------------------------------------------------------------
 
-  ///////////////////////////////////
-  // Replace this with your Design //
-  ///////////////////////////////////
-  obi_err_sbr #(
-    .ObiCfg      ( SbrObiCfg     ),
-    .obi_req_t   ( sbr_obi_req_t ),
-    .obi_rsp_t   ( sbr_obi_rsp_t ),
-    .NumMaxTrans ( 1             ),
-    .RspData     ( 32'hBADCAB1E  )
-  ) i_your_design_goes_here (
+  user_name_rom #(
+    .ObiCfg    ( SbrObiCfg     ),
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t )
+  ) i_user_name_rom (
     .clk_i,
     .rst_ni,
-    .testmode_i ( testmode_i          ),
-    .obi_req_i  ( user_design_obi_req ),
-    .obi_rsp_o  ( user_design_obi_rsp )
+
+    .obi_req_i ( user_rom_obi_req ),
+    .obi_rsp_o ( user_rom_obi_rsp )
   );
 
-  // Error Subordinate
+  user_amcp #(
+    .GpioCount ( GpioCount     ),
+    .PwmWidth  ( 16            ),
+    .ObiCfg    ( SbrObiCfg     ),
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t )
+  ) i_user_amcp (
+    .clk_i,
+    .rst_ni,
+
+    .obi_req_i ( user_amcp_obi_req ),
+    .obi_rsp_o ( user_amcp_obi_rsp ),
+
+    .gpio_in_sync_i       ( gpio_in_sync_i       ),
+    .amcp_gpio_o          ( amcp_gpio_o          ),
+    .amcp_gpio_out_en_o   ( amcp_gpio_out_en_o   ),
+    .amcp_gpio_override_o ( amcp_gpio_override_o )
+  );
+
   obi_err_sbr #(
     .ObiCfg      ( SbrObiCfg     ),
     .obi_req_t   ( sbr_obi_req_t ),

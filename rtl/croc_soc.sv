@@ -50,6 +50,14 @@ localparam int unsigned NumExternalIrqs = 4;
 logic [NumExternalIrqs-1:0] interrupts;
 logic [      GpioCount-1:0] gpio_in_sync;
 
+logic [GpioCount-1:0] croc_gpio_o;
+logic [GpioCount-1:0] croc_gpio_out_en_o;
+
+logic [GpioCount-1:0] amcp_gpio_o;
+logic [GpioCount-1:0] amcp_gpio_out_en_o;
+logic [GpioCount-1:0] amcp_gpio_override_o;
+
+
 croc_domain #(
   .GpioCount       ( GpioCount       ),
   .NumExternalIrqs ( NumExternalIrqs )
@@ -69,8 +77,8 @@ croc_domain #(
   .uart_tx_o,
 
   .gpio_i,
-  .gpio_o,
-  .gpio_out_en_o,
+  .gpio_o        ( croc_gpio_o        ),
+  .gpio_out_en_o ( croc_gpio_out_en_o ),
 
   .gpio_in_sync_o ( gpio_in_sync ),
 
@@ -100,7 +108,20 @@ user_domain #(
   .user_mgr_obi_rsp_i ( user_mgr_obi_rsp ),
 
   .gpio_in_sync_i ( gpio_in_sync ),
+
+  .amcp_gpio_o          ( amcp_gpio_o          ),
+  .amcp_gpio_out_en_o   ( amcp_gpio_out_en_o   ),
+  .amcp_gpio_override_o ( amcp_gpio_override_o ),
+
   .interrupts_o   ( interrupts   )
 );
 
+assign gpio_o =
+    (amcp_gpio_override_o & amcp_gpio_o) |
+    (~amcp_gpio_override_o & croc_gpio_o);
+
+assign gpio_out_en_o =
+    (amcp_gpio_override_o & amcp_gpio_out_en_o) |
+    (~amcp_gpio_override_o & croc_gpio_out_en_o);
+    
 endmodule

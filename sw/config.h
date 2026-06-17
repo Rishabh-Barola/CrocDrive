@@ -18,6 +18,21 @@
 #define IDMA_BASE_ADDR      0x0300B000
 #define USER_ROM_BASE_ADDR  0x20000000
 
+#define AMCP_BASE_ADDR      0x20001000
+
+#define AMCP_ID_OFFSET             0x000
+#define AMCP_VERSION_OFFSET        0x004
+#define AMCP_PINMUX_OFFSET         0x008
+#define AMCP_STATUS_OFFSET         0x00C
+
+#define PWM_CTRL_OFFSET            0x010
+#define PWM_PERIOD_OFFSET          0x014
+#define PWM_DUTY_OFFSET            0x018
+#define PWM_COUNTER_OFFSET         0x01C
+#define PWM_STATUS_OFFSET          0x020
+#define PWM_DUTY_ACTIVE_OFFSET     0x024
+#define PWM_PERIOD_ACTIVE_OFFSET   0x028
+
 // Frequencies
 #define TB_FREQUENCY        20000000
 #define TB_BAUDRATE         115200
