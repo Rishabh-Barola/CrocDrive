@@ -1,0 +1,35 @@
+[*]
+[*] GTKWave Analyzer v4.0.0-prealpha (8ba24ab) (w)1999-2022 BSI
+[*] Wed Jun 17 21:26:50 2026
+[*]
+[dumpfile] "/scratch/vlsi2_12fs26/reference_flow/rtl/user_domain/tb/tb_pwm_core.fst"
+[dumpfile_mtime] "Wed Jun 17 21:10:15 2026"
+[dumpfile_size] 1207
+[savefile] "/scratch/vlsi2_12fs26/reference_flow/rtl/user_domain/tb/tb_pwn_core.gtkw"
+[timestart] 890600
+[size] 1710 880
+[pos] -1 -271
+*-12.520732 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[treeopen] tb_pwm_core.
+[sst_width] 276
+[signals_width] 250
+[sst_expanded] 1
+[sst_vpaned_height] 248
+@24
+tb_pwm_core.clk_i
+tb_pwm_core.counter_o[15:0]
+tb_pwm_core.duty_active_o[15:0]
+tb_pwm_core.duty_cfg_i[15:0]
+@25
+tb_pwm_core.enable_i
+@24
+tb_pwm_core.errors
+tb_pwm_core.period_active_o[15:0]
+tb_pwm_core.period_cfg_i[15:0]
+tb_pwm_core.period_done_o
+tb_pwm_core.period_zero_o
+tb_pwm_core.polarity_i
+tb_pwm_core.pwm_o
+tb_pwm_core.rst_ni
+[pattern_trace] 1
+[pattern_trace] 0

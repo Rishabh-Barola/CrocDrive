@@ -1,0 +1,19 @@
+verilated_fst_c.o: \
+ /foss/tools/verilator/share/verilator/include/verilated_fst_c.cpp \
+ /foss/tools/verilator/share/verilator/include/verilated.h \
+ /foss/tools/verilator/share/verilator/include/verilated_config.h \
+ /foss/tools/verilator/share/verilator/include/verilatedos.h \
+ /foss/tools/verilator/share/verilator/include/verilated_types.h \
+ /foss/tools/verilator/share/verilator/include/verilated_funcs.h \
+ /foss/tools/verilator/share/verilator/include/verilated_fst_c.h \
+ /foss/tools/verilator/share/verilator/include/verilated_trace.h \
+ /foss/tools/verilator/share/verilator/include/gtkwave/fastlz.c \
+ /foss/tools/verilator/share/verilator/include/gtkwave/fastlz.h \
+ /foss/tools/verilator/share/verilator/include/gtkwave/fastlz.c \
+ /foss/tools/verilator/share/verilator/include/gtkwave/fstapi.c \
+ /foss/tools/verilator/share/verilator/include/gtkwave/fstapi.h \
+ /foss/tools/verilator/share/verilator/include/gtkwave/lz4.h \
+ /foss/tools/verilator/share/verilator/include/gtkwave/lz4.c \
+ /foss/tools/verilator/share/verilator/include/verilated_trace_imp.h \
+ /foss/tools/verilator/share/verilator/include/verilated_intrinsics.h \
+ /foss/tools/verilator/share/verilator/include/verilated_threads.h
