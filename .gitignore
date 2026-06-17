@@ -1,0 +1,20 @@
+# build outputs
+sw/bin/
+sw/build/
+yosys/out/
+yosys/tmp/
+yosys/reports/
+openroad/out/
+openroad/logs/
+openroad/reports/
+openroad/save/
+klayout/out/
+klayout/drc/out/
+vsim/work/
+modelsim/work/
+
+# misc
+*.log
+gmon.out
+*.vcd
+*.fst
