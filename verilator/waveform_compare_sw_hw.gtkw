@@ -1,0 +1,25 @@
+[*]
+[*] GTKWave Analyzer v4.0.0-prealpha (8ba24ab) (w)1999-2022 BSI
+[*] Thu Jun 18 04:54:28 2026
+[*]
+[dumpfile] "/scratch/vlsi2_12fs26/reference_flow/verilator/croc.fst"
+[dumpfile_mtime] "Thu Jun 18 04:52:34 2026"
+[dumpfile_size] 11025431
+[savefile] "/scratch/vlsi2_12fs26/reference_flow/verilator/waveform_compare_sw_hw.gtkw"
+[timestart] 5715870000
+[size] 1710 880
+[pos] -1 -271
+*-23.478188 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[treeopen] tb_croc_soc.
+[sst_width] 276
+[signals_width] 182
+[sst_expanded] 1
+[sst_vpaned_height] 248
+@28
+tb_croc_soc.dbg_gpio0_pwm
+tb_croc_soc.dbg_gpio1_sw_marker
+tb_croc_soc.dbg_gpio2_hw_marker
+@29
+tb_croc_soc.i_croc_soc.clk_i
+[pattern_trace] 1
+[pattern_trace] 0

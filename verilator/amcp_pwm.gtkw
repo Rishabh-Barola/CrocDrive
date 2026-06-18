@@ -1,0 +1,24 @@
+[*]
+[*] GTKWave Analyzer v4.0.0-prealpha (8ba24ab) (w)1999-2022 BSI
+[*] Wed Jun 17 20:56:57 2026
+[*]
+[dumpfile] "/scratch/vlsi2_12fs26/reference_flow/verilator/croc.fst"
+[dumpfile_mtime] "Wed Jun 17 20:53:24 2026"
+[dumpfile_size] 28940878
+[savefile] "/scratch/vlsi2_12fs26/reference_flow/verilator/amcp_pwm.gtkw"
+[timestart] 5019147000
+[size] 1374 600
+[pos] 222 -140
+*-17.371315 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[sst_width] 276
+[signals_width] 198
+[sst_expanded] 1
+[sst_vpaned_height] 150
+@28
+tb_croc_soc.dbg_amcp_pwm_o
+tb_croc_soc.dbg_gpio0_out_en
+tb_croc_soc.dbg_gpio0_pwm
+@22
+tb_croc_soc.dbg_pwm_counter[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

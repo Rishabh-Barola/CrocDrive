@@ -112,6 +112,29 @@ module tb_croc_soc #(
     .gpio_out_en_o ( gpio_out_en )
   );
 
+  // Debug aliases for waveform inspection.
+  // These make GTKWave much easier than manually decoding gpio_out[31:0].
+  logic dbg_gpio0_pwm;
+  logic dbg_gpio0_out_en;
+  logic dbg_amcp_pwm_o;
+  logic [15:0] dbg_pwm_counter;
+  logic [15:0] dbg_pwm_period_active;
+  logic [15:0] dbg_pwm_duty_active;
+
+    // Debug aliases for GTKWave inspection in comparison between software and hardware.
+  logic dbg_gpio1_sw_marker;
+  logic dbg_gpio2_hw_marker;
+  assign dbg_gpio1_sw_marker = gpio_out[1];
+  assign dbg_gpio2_hw_marker = gpio_out[2];
+
+  assign dbg_gpio0_pwm         = gpio_out[0];
+  assign dbg_gpio0_out_en      = gpio_out_en[0];
+  assign dbg_amcp_pwm_o        = i_croc_soc.i_user.i_user_amcp.pwm_o;
+  assign dbg_pwm_counter       = i_croc_soc.i_user.i_user_amcp.i_pwm_core.counter_o;
+  assign dbg_pwm_period_active = i_croc_soc.i_user.i_user_amcp.i_pwm_core.period_active_o;
+  assign dbg_pwm_duty_active   = i_croc_soc.i_user.i_user_amcp.i_pwm_core.duty_active_o;
+
+  
   /////////////////
   //  Testbench  //
   /////////////////
@@ -161,6 +184,17 @@ module tb_croc_soc #(
       `ifdef VERILATOR
         $dumpfile("croc.fst");
         $dumpvars(1, i_croc_soc);
+
+        // Also dump selected scalar debug aliases from the testbench.
+        $dumpvars(0, dbg_gpio0_pwm);
+        $dumpvars(0, dbg_gpio0_out_en);
+        $dumpvars(0, dbg_amcp_pwm_o);
+        $dumpvars(0, dbg_pwm_counter);
+        $dumpvars(0, dbg_pwm_period_active);
+        $dumpvars(0, dbg_pwm_duty_active);
+        $dumpvars(0, dbg_gpio1_sw_marker);
+        $dumpvars(0, dbg_gpio2_hw_marker);
+
       `else
         $dumpfile("croc.vcd");
         $dumpvars(1, i_croc_soc);
