@@ -1,0 +1,5 @@
+source($input, $topcell)
+report("quick_m1", $report)
+
+m1 = input(8, 0)
+m1.space(0.18.um).output("M1.b", "M1 min space/notch < 0.18um")

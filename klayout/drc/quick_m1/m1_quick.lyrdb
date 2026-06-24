@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<report-database>
+ <description>quick_m1</description>
+ <original-file/>
+ <generator>drc: script='m1_quick.drc'</generator>
+ <top-cell>croc_chip</top-cell>
+ <tags>
+ </tags>
+ <categories>
+  <category>
+   <name>M1.b</name>
+   <description>M1 min space/notch &lt; 0.18um</description>
+   <categories>
+   </categories>
+  </category>
+ </categories>
+ <cells>
+  <cell>
+   <name>croc_chip</name>
+   <variant/>
+   <layout-name/>
+   <references>
+   </references>
+  </cell>
+ </cells>
+ <items>
+  <item>
+   <tags/>
+   <category>'M1.b'</category>
+   <cell>croc_chip</cell>
+   <visited>false</visited>
+   <multiplicity>1</multiplicity>
+   <comment/>
+   <image/>
+   <values>
+    <value>edge-pair: (816.165,1191.19;816.165,1191.284)|(815.995,1191.225;815.995,1191.131)</value>
+   </values>
+  </item>
+ </items>
+</report-database>

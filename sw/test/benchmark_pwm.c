@@ -76,6 +76,7 @@ static uint32_t measure_software_pwm_cycles(
         // Toggle high->low.
         *gpio_toggle_reg = GPIO0_MASK;
         delay_nops(low_delay_nops);
+        
     }
 
     uint32_t end = read_mcycle();
