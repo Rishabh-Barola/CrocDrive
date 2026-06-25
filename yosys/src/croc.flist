@@ -177,6 +177,7 @@
 ../rtl/croc_domain.sv
 ../rtl/user_domain/user_name_rom.sv
 ../rtl/user_domain/pwm_core.sv
+../rtl/user_domain/qen_core.sv
 ../rtl/user_domain/user_amcp.sv
 ../rtl/user_domain.sv
 ../rtl/croc_soc.sv

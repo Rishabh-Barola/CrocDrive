@@ -52,6 +52,10 @@ yosys setattr -set keep_hierarchy 1 "t:cdc*phase_*$*"
 yosys setattr -set keep_hierarchy 1 "t:cdc*_src*$*"
 yosys setattr -set keep_hierarchy 1 "t:cdc*_dst*$*"
 yosys setattr -set keep_hierarchy 1 "t:sync$*"
+yosys setattr -set keep_hierarchy 1 "t:pwm_core$*"
+yosys setattr -set keep_hierarchy 1 "t:qen_core$*"
+yosys setattr -set keep_hierarchy 1 "t:user_amcp$*"
+yosys setattr -set keep_hierarchy 1 "t:user_name_rom$*"
 
 
 # blackbox modules (applies the *blackbox* attribute)

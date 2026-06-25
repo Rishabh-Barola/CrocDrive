@@ -24,6 +24,8 @@ module user_amcp #(
   localparam logic [31:0] AmcpId      = 32'h414D4350; // "AMCP"
   localparam logic [31:0] AmcpVersion = 32'h00000001;
 
+  localparam int unsigned QenWidth = 32;
+
   localparam logic [5:0] RegAmcpId           = 6'h00; // 0x000
   localparam logic [5:0] RegAmcpVersion      = 6'h01; // 0x004
   localparam logic [5:0] RegAmcpPinmux       = 6'h02; // 0x008
@@ -35,6 +37,17 @@ module user_amcp #(
   localparam logic [5:0] RegPwmStatus        = 6'h08; // 0x020
   localparam logic [5:0] RegPwmDutyActive    = 6'h09; // 0x024
   localparam logic [5:0] RegPwmPeriodActive  = 6'h0A; // 0x028
+
+  localparam logic [5:0] RegQenCtrl          = 6'h10; // 0x040
+  localparam logic [5:0] RegQenStatus        = 6'h11; // 0x044
+  localparam logic [5:0] RegQenPosition      = 6'h12; // 0x048
+  localparam logic [5:0] RegQenVelocity      = 6'h13; // 0x04C
+  localparam logic [5:0] RegQenDelta         = 6'h14; // 0x050
+  localparam logic [5:0] RegQenIndexPosition = 6'h15; // 0x054
+  localparam logic [5:0] RegQenErrorCount    = 6'h16; // 0x058
+  localparam logic [5:0] RegQenSamplePeriod  = 6'h17; // 0x05C
+  localparam logic [5:0] RegQenSimInput      = 6'h18; // 0x060
+  localparam logic [5:0] RegQenDebug         = 6'h19; // 0x064
 
   // Captured OBI request
   logic req_q;
@@ -62,6 +75,34 @@ module user_amcp #(
   logic pwm_period_done;
   logic pwm_period_zero;
 
+  // QEN software-visible control registers
+  logic qen_enable_q;
+  logic qen_index_reset_enable_q;
+  logic qen_sim_input_enable_q;
+  logic [31:0] qen_sample_period_q;
+  logic [2:0] qen_sim_input_q;
+
+  // QEN control pulses
+  logic qen_clear_position;
+  logic qen_clear_error;
+
+  // QEN input mux
+  logic qen_a;
+  logic qen_b;
+  logic qen_z;
+
+  // QEN core signals
+  logic signed [QenWidth-1:0] qen_position;
+  logic signed [QenWidth-1:0] qen_velocity;
+  logic signed [QenWidth-1:0] qen_delta;
+  logic signed [QenWidth-1:0] qen_index_position;
+  logic [31:0] qen_error_count;
+  logic qen_direction;
+  logic qen_index_seen;
+  logic qen_invalid_transition;
+  logic qen_velocity_valid;
+  logic [1:0] qen_ab_state;
+
   // Read response
   logic [ObiCfg.DataWidth-1:0] rsp_data;
   logic rsp_err;
@@ -69,6 +110,16 @@ module user_amcp #(
   // Word offset inside AMCP 4 KiB region.
   logic [5:0] reg_word_offset;
   assign reg_word_offset = addr_q[7:2];
+
+  assign qen_clear_position = req_q && we_q && (reg_word_offset == RegQenCtrl) && wdata_q[1];
+  assign qen_clear_error    = req_q && we_q && (reg_word_offset == RegQenCtrl) && wdata_q[2];
+
+  // For the first QEN integration:
+  //   sim_input_enable = 1 -> use QEN_SIM_INPUT register bits.
+  //   sim_input_enable = 0 -> use GPIO[1]=A, GPIO[2]=B, GPIO[3]=Z.
+  assign qen_a = qen_sim_input_enable_q ? qen_sim_input_q[0] : gpio_in_sync_i[1];
+  assign qen_b = qen_sim_input_enable_q ? qen_sim_input_q[1] : gpio_in_sync_i[2];
+  assign qen_z = qen_sim_input_enable_q ? qen_sim_input_q[2] : gpio_in_sync_i[3];
 
   // Accept every request immediately.
   assign obi_rsp_o.gnt = obi_req_i.req;
@@ -116,6 +167,12 @@ module user_amcp #(
       pwm_period_q       <= '0;
       pwm_duty_q         <= '0;
       pwm_status_q       <= '0;
+
+      qen_enable_q             <= 1'b0;
+      qen_index_reset_enable_q <= 1'b0;
+      qen_sim_input_enable_q   <= 1'b1;
+      qen_sample_period_q      <= 32'd16;
+      qen_sim_input_q          <= 3'b000;
     end else begin
       pwm_status_q <= pwm_status_d;
 
@@ -136,6 +193,20 @@ module user_amcp #(
 
           RegPwmDuty: begin
             pwm_duty_q <= wdata_q[PwmWidth-1:0];
+          end
+
+          RegQenCtrl: begin
+            qen_enable_q             <= wdata_q[0];
+            qen_index_reset_enable_q <= wdata_q[3];
+            qen_sim_input_enable_q   <= wdata_q[4];
+          end
+
+          RegQenSamplePeriod: begin
+            qen_sample_period_q <= wdata_q[31:0];
+          end
+
+          RegQenSimInput: begin
+            qen_sim_input_q <= wdata_q[2:0];
           end
 
           default: begin
@@ -164,6 +235,36 @@ module user_amcp #(
     .duty_active_o   ( pwm_duty_active   ),
     .period_done_o   ( pwm_period_done   ),
     .period_zero_o   ( pwm_period_zero   )
+  );
+
+  qen_core #(
+    .PosWidth    ( QenWidth ),
+    .SampleWidth ( 32       )
+  ) i_qen_core (
+    .clk_i,
+    .rst_ni,
+
+    .enable_i             ( qen_enable_q             ),
+    .clear_position_i     ( qen_clear_position       ),
+    .clear_error_i        ( qen_clear_error          ),
+    .index_reset_enable_i ( qen_index_reset_enable_q ),
+
+    .sample_period_i ( qen_sample_period_q ),
+
+    .a_i ( qen_a ),
+    .b_i ( qen_b ),
+    .z_i ( qen_z ),
+
+    .position_o           ( qen_position           ),
+    .velocity_o           ( qen_velocity           ),
+    .delta_o              ( qen_delta              ),
+    .direction_o          ( qen_direction          ),
+    .index_seen_o         ( qen_index_seen         ),
+    .index_position_o     ( qen_index_position     ),
+    .error_count_o        ( qen_error_count        ),
+    .invalid_transition_o ( qen_invalid_transition ),
+    .velocity_valid_o     ( qen_velocity_valid     ),
+    .ab_state_o           ( qen_ab_state           )
   );
 
   // GPIO alternate-function routing.
@@ -234,6 +335,63 @@ module user_amcp #(
           rsp_err  = we_q;
         end
 
+        RegQenCtrl: begin
+          rsp_data = {{(ObiCfg.DataWidth-5){1'b0}},
+                      qen_sim_input_enable_q,
+                      qen_index_reset_enable_q,
+                      2'b00,
+                      qen_enable_q};
+        end
+
+        RegQenStatus: begin
+          rsp_data = {{(ObiCfg.DataWidth-6){1'b0}},
+                      qen_velocity_valid,
+                      qen_invalid_transition,
+                      (qen_error_count != 32'd0),
+                      qen_index_seen,
+                      qen_direction,
+                      qen_enable_q};
+          rsp_err  = we_q;
+        end
+
+        RegQenPosition: begin
+          rsp_data = qen_position;
+          rsp_err  = we_q;
+        end
+
+        RegQenVelocity: begin
+          rsp_data = qen_velocity;
+          rsp_err  = we_q;
+        end
+
+        RegQenDelta: begin
+          rsp_data = qen_delta;
+          rsp_err  = we_q;
+        end
+
+        RegQenIndexPosition: begin
+          rsp_data = qen_index_position;
+          rsp_err  = we_q;
+        end
+
+        RegQenErrorCount: begin
+          rsp_data = qen_error_count;
+          rsp_err  = we_q;
+        end
+
+        RegQenSamplePeriod: begin
+          rsp_data = qen_sample_period_q;
+        end
+
+        RegQenSimInput: begin
+          rsp_data = {{(ObiCfg.DataWidth-3){1'b0}}, qen_sim_input_q};
+        end
+
+        RegQenDebug: begin
+          rsp_data = {{(ObiCfg.DataWidth-5){1'b0}}, qen_z, qen_b, qen_a, qen_ab_state};
+          rsp_err  = we_q;
+        end
+
         default: begin
           rsp_data = 32'hBADC0DE;
           rsp_err  = 1'b1;
@@ -247,11 +405,6 @@ module user_amcp #(
   assign obi_rsp_o.r.rid        = id_q;
   assign obi_rsp_o.r.err        = rsp_err;
   assign obi_rsp_o.r.r_optional = '0;
-
-  // Reserved for later QEN integration.
-  // The input is intentionally unused in the PWM-only version.
-  logic unused_gpio_in_sync;
-  assign unused_gpio_in_sync = ^gpio_in_sync_i;
 
   // Byte-enable is captured for future partial-write support.
   logic unused_be;

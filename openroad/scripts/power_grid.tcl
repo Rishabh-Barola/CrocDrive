@@ -43,14 +43,14 @@ set tpg1Pitch    90; # multiple of pad-pitch
 set tpg1Spacing  10; # big enough to skip over a pad
 set tpg1Offset   70; # offset from leftX of core
 
-set pg4Width      1; # two tracks on Metal4
+set pg4Width      2.0; # widened for SRAM 1024x64 PDN via landing
 set pg4Pitch     90; # multiple of pad-pitch
 
 # Macro Power Rings -> M3 and M2
 ## Spacing must be larger than pitch of M2/M3
 set mprSpacing 0.6
 ## Width
-set mprWidth  1.05
+set mprWidth  2.0
 ## Offset from Macro to power ring
 set mprOffsetX 2.4
 set mprOffsetY 1.0
@@ -96,7 +96,7 @@ add_pdn_ring -grid {core_grid} \
 add_pdn_stripe -grid {core_grid} -layer {Metal1} -width {0.32} -offset {0} \
                -followpins -extend_to_core_ring
 
-sram_power "sram_512x32"  "RM_IHPSG13_1P_512x32_c2_bm_bist"
+sram_power "sram_1024x64"  "RM_IHPSG13_1P_1024x64_c2_bm_bist"
 
 # Top power grid
 # Top 1 Stripe

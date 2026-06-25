@@ -21,6 +21,8 @@ module croc_vip #(
   input  logic                 uart_tx_i,
   input  logic [GpioCount-1:0] gpio_out_en_i,
   input  logic [GpioCount-1:0] gpio_out_i,
+  input  logic [GpioCount-1:0] gpio_in_ext_i,
+  input  logic [GpioCount-1:0] gpio_in_ext_oe_i,
   output logic [GpioCount-1:0] gpio_in_o
 );
 
@@ -380,8 +382,13 @@ module croc_vip #(
   //  GPIO  //
   ////////////
 
-  assign gpio_in_o[3:0]           = '0;
-  assign gpio_in_o[7:4]           = gpio_out_en_i[3:0] & gpio_out_i[3:0]; // loop back
-  assign gpio_in_o[GpioCount-1:8] = '0;
+  logic [GpioCount-1:0] gpio_in_default;
+
+  assign gpio_in_default[3:0]           = '0;
+  assign gpio_in_default[7:4]           = gpio_out_en_i[3:0] & gpio_out_i[3:0]; // loop back
+  assign gpio_in_default[GpioCount-1:8] = '0;
+
+  assign gpio_in_o = (gpio_in_ext_oe_i & gpio_in_ext_i) |
+                     (~gpio_in_ext_oe_i & gpio_in_default);
 
 endmodule

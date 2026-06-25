@@ -193,7 +193,7 @@ set_global_routing_layer_adjustment TopMetal1 0.20
 set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
 utl::report "Global route"
-global_route -guide_file ${report_dir}/04_${proj_name}*route.guide -congestion_report_file ${report_dir}/04*${proj_name}_route_congestion.rpt -allow_congestion
+global_route -guide_file ${report_dir}/04_${proj_name}_route.guide -congestion_report_file ${report_dir}/04_${proj_name}_route_congestion.rpt -allow_congestion
 
 utl::report "Estimate parasitics"
 estimate_parasitics -global_routing
@@ -241,7 +241,7 @@ check_placement -verbose
 
 # Reroute only modified nets.
 
-global_route -end_incremental -guide_file ${report_dir}/04_${proj_name}*route.guide -congestion_report_file ${report_dir}/04*${proj_name}_route_congestion.rpt -allow_congestion -verbose
+global_route -end_incremental -guide_file ${report_dir}/04_${proj_name}_route.guide -congestion_report_file ${report_dir}/04_${proj_name}_route_congestion.rpt -allow_congestion -verbose
 
 utl::report "Estimate parasitics after repaired global route"
 estimate_parasitics -global_routing
@@ -264,7 +264,7 @@ repair_antennas -ratio_margin 30 -iterations 5
 
 utl::report "Detailed route"
 set_thread_count 8
-detailed_route -output_drc ${report_dir}/04_${proj_name}_route_drc.rpt -bottom_routing_layer Metal2 -top_routing_layer TopMetal1 -droute_end_iter 30 -drc_report_iter_step 5 -save_guide_updates -clean_patches -verbose 1
+detailed_route -output_drc ${report_dir}/04_${proj_name}_route_drc.rpt -droute_end_iter 30 -drc_report_iter_step 5 -save_guide_updates -clean_patches -verbose 1
 
 utl::report "Saving detailed route"
 save_checkpoint 04_${proj_name}.routed

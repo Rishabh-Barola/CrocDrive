@@ -33,6 +33,17 @@
 #define PWM_DUTY_ACTIVE_OFFSET     0x024
 #define PWM_PERIOD_ACTIVE_OFFSET   0x028
 
+#define QEN_CTRL_OFFSET             0x040
+#define QEN_STATUS_OFFSET           0x044
+#define QEN_POSITION_OFFSET         0x048
+#define QEN_VELOCITY_OFFSET         0x04C
+#define QEN_DELTA_OFFSET            0x050
+#define QEN_INDEX_POSITION_OFFSET   0x054
+#define QEN_ERROR_COUNT_OFFSET      0x058
+#define QEN_SAMPLE_PERIOD_OFFSET    0x05C
+#define QEN_SIM_INPUT_OFFSET        0x060
+#define QEN_DEBUG_OFFSET            0x064
+
 // Frequencies
 #define TB_FREQUENCY        20000000
 #define TB_BAUDRATE         115200
