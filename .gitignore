@@ -109,3 +109,20 @@ rtl/user_domain/tb/**/obj_dir/
 !vsim/*.v
 !vsim/run_vsim.sh
 !vsim/modelsim.ini
+
+# Local/debug snapshots
+.gitignore.2026-*
+.hash
+.llamaconfig
+cockpit.log
+tree.txt
+tree_ref.txt
+
+# Old/redundant helper scripts
+run_backend_simple.sh
+run_frontend_regression.sh
+run_rtl_to_drc_lvs.sh
+run_amcp_frontend.sh
+
+# Ad-hoc run logs
+run_*.log

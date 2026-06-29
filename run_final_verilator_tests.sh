@@ -45,7 +45,7 @@ run_logged() {
   echo "============================================================"
 
   (
-    cd "$ROOT"
+    cd "$ROOT" 
     "$@"
   ) >"$logfile" 2>&1
 
@@ -108,7 +108,7 @@ check_source_inclusion() {
   local logfile="$LOGDIR/source_inclusion.log"
 
   {
-    cd "$ROOT"
+    cd "$ROOT" 
 
     echo "### Git status"
     git status --short || true
@@ -191,7 +191,7 @@ run_sv_tb() {
   echo "============================================================"
 
   (
-    cd "$ROOT/$dir"
+    cd "$ROOT/$dir" 
 
     rm -rf obj_dir
 
