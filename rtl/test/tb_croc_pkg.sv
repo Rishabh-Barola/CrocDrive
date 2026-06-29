@@ -9,16 +9,24 @@
 package tb_croc_pkg;
 
   // Clocks
+
+
+
+  // localparam realtime ClkPeriodSys  = 10ns;    // 100 MHz, matches final SDC
+  // localparam realtime ClkPeriodJtag = 25ns;    // 40 MHz, matches final SDC
+  // localparam realtime ClkPeriodRef  = 50ns;    // 20 MHz, matches final SDC
+
   localparam realtime ClkPeriodSys  = 50ns;    // 20 MHz
   localparam realtime ClkPeriodJtag = 50ns;    // 20 MHz
   localparam realtime ClkPeriodRef  = 30518ns; // 32 KiHz
+
 
   // Number of clock cycles the reset is applied
   // for at the beginnig of the simulation
   localparam int unsigned RstCycles = 1;
 
   // UART
-  localparam int unsigned UartBaudRate  = 115200;
+  localparam int unsigned UartBaudRate  = 115200; 
   localparam int unsigned UartParityEna = 0;
 
   // Base address of the SRAM banks

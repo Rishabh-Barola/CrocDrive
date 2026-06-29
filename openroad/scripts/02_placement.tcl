@@ -48,7 +48,10 @@ utl::report "###################################################################
 
 # Don't touch clock-tree related nets as repair_timing can insert buffers
 # which then prevents CTS from running
-set clock_nets [get_nets -of_objects [get_pins -of_objects "*_reg" -filter "name == CLK"]]
+# Protect clock-tree related nets before CTS.
+# In the mapped EZ130 standard-cell library, sequential clock pins are CK.
+
+set clock_nets [get_nets -of_objects [get_pins -of_objects "*_reg" -filter "name == CK"]]
 set_dont_touch $clock_nets
 
 utl::report "Repair tie fanout"
@@ -87,8 +90,12 @@ save_checkpoint 02-02_${proj_name}.gpl1
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
 utl::report "Repair design"
-repair_design -verbose
+repair_design -verbose 
 save_checkpoint 02-02_${proj_name}.gpl1_fix
+
+repair_tie_fanout $tieHiPin
+repair_tie_fanout $tieLoPin
+
 
 utl::report "Repair setup"
 repair_timing -setup -verbose
@@ -104,6 +111,37 @@ report_metrics "02-02_${proj_name}.gpl2"
 report_image "02-02_${proj_name}.gpl2" true true
 save_checkpoint 02-02_${proj_name}.gpl2
 
+# These two NOR4 drivers were identified in the GUI/OpenDB dump as driving
+# high-fanout internal nets with many max-slew violations. Automatic
+# repair_design did not resize them, so we upsize them explicitly.
+replace_cell {i_croc_soc/i_croc/_3764_} NOR4X2
+replace_cell {i_croc_soc/i_croc/_3642_} NOR4X2
+
+utl::report "Estimate parasitics after Global Placement (2)"
+estimate_parasitics -placement
+
+utl::report "Report DRV after GPL2 before final repair"
+report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/02_drv_after_gpl2_before_repair.rpt
+puts "DRV after GPL2 before repair: max_slew=[sta::max_slew_violation_count] max_fanout=[sta::max_fanout_violation_count] max_cap=[sta::max_capacitance_violation_count]"
+
+utl::report "Final placement-stage DRV repair"
+repair_design -verbose
+
+utl::report "Final placement-stage setup repair"
+repair_timing -setup -skip_pin_swap -verbose -repair_tns 100
+utl::report "Targeted upsize of high-fanout internal decode/control drivers"
+
+
+
+save_checkpoint 02-02_${proj_name}.gpl2_targeted_upsize
+
+
+utl::report "Report DRV after final placement repair"
+report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/02_drv_after_final_repair.rpt
+puts "DRV after final repair: max_slew=[sta::max_slew_violation_count] max_fanout=[sta::max_fanout_violation_count] max_cap=[sta::max_capacitance_violation_count]"
+
+save_checkpoint 02-02_${proj_name}.gpl2_repaired
+
 
 utl::report "###############################################################################"
 utl::report "# 02-03: Detailed Placement"
@@ -115,6 +153,9 @@ detailed_placement
 
 utl::report "Optimize mirroring"
 optimize_mirroring
+
+utl::report "Check placement"
+check_placement -verbose
 
 utl::report "Estimate parasitics"
 estimate_parasitics -placement

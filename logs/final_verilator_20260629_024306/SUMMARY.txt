@@ -1,0 +1,209 @@
+Final Verilator regression started at Mon Jun 29 02:43:06 AM CEST 2026
+Log directory: /scratch/vlsi2_12fs26/reference_flow/logs/final_verilator_20260629_024306
+
+============================================================
+Running helloworld
+PASS helloworld
+---- useful tail for helloworld ----
+@   3540850ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_clint
+PASS test_clint
+---- useful tail for test_clint ----
+@   1681950ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_compute
+PASS test_compute
+---- useful tail for test_compute ----
+@   1661900ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_gpio
+PASS test_gpio
+---- useful tail for test_gpio ----
+@   1666500ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_idma
+PASS test_idma
+---- useful tail for test_idma ----
+============================================================
+Running test_interrupts
+PASS test_interrupts
+---- useful tail for test_interrupts ----
+@   1683700ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_obi_timer
+PASS test_obi_timer
+---- useful tail for test_obi_timer ----
+@   1672200ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_soc_ctrl
+PASS test_soc_ctrl
+---- useful tail for test_soc_ctrl ----
+@   1590600ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_sram
+PASS test_sram
+---- useful tail for test_sram ----
+@  15875600ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_uart
+PASS test_uart
+---- useful tail for test_uart ----
+@   1837500ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_pwm
+PASS test_pwm
+---- useful tail for test_pwm ----
+@   3682450ns | [UART] AMCP ID: 0x414D4350
+@   5266450ns | [UART] AMCP version: 0x1
+@   6762450ns | [UART] AMCP pinmux: 0x1
+@  19341200ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_qen
+PASS test_qen
+---- useful tail for test_qen ----
+@   3449500ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_qen_verbose
+PASS test_qen_verbose
+---- useful tail for test_qen_verbose ----
+@   7855150ns | [UART] QM,case,exp_pos,act_pos,exp_err,act_err,exp_idx,act_idx,status
+@  11023150ns | [UART] QM,0x10,0x4,0x4,0x0,0x0,0x0,0x0,0x3
+@  15423150ns | [UART] QM,0x20,0xFFFFFFFC,0xFFFFFFFC,0x0,0x0,0x0,0x0,0x1
+@  18591150ns | [UART] QM,0x30,0x5,0x5,0x0,0x0,0x0,0x0,0x1
+@  21759150ns | [UART] QM,0x40,0x0,0x0,0x2,0x2,0x0,0x0,0x9
+@  24927150ns | [UART] QM,0x50,0x0,0x0,0x0,0x0,0x0,0x0,0x1
+@  28095150ns | [UART] QM,0x60,0x0,0x0,0x0,0x0,0x0,0x0,0x3
+@  31263150ns | [UART] QM,0x70,0xC,0xC,0x0,0x0,0x8,0x8,0x7
+@  34431150ns | [UART] QM,0x80,0x4,0x4,0x0,0x0,0x8,0x8,0x7
+@  35597350ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_qen_gpio
+PASS test_qen_gpio
+---- useful tail for test_qen_gpio ----
+@  21738150ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running test_qen_gpio_verbose
+PASS test_qen_gpio_verbose
+---- useful tail for test_qen_gpio_verbose ----
+@   7153250ns | [UART] QG,mode,exp_pos,act_pos,exp_err,act_err,exp_idx,act_idx,st
+@   9969250ns | [UART] QG,0x515E0001,0x190,0x0,0x0,0x3
+@  16273250ns | [UART] QG,0x515E0002,0xFFFFFF60,0x0,0x0,0x1
+@  22137250ns | [UART] QG,0x515E0003,0x50,0x0,0x0,0x1
+@  28001250ns | [UART] QG,0x515E0004,0x0,0x10,0x0,0x9
+@  33953250ns | [UART] QG,0x515E0005,0x3C,0x0,0x28,0x7
+@  39817250ns | [UART] QG,0x515E0006,0x14,0x0,0x28,0x7
+@  42840150ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running benchmark_pwm
+PASS benchmark_pwm
+---- useful tail for benchmark_pwm ----
+@   5840850ns | [UART] AMCP ID: 0x414D4350
+@   7424850ns | [UART] TEST_A_CPU_CYCLES
+@ 118248850ns | [UART] TEST_B_CPU_AVAILABILITY
+@ 142704850ns | [UART] PWM benchmark done
+@ 142732650ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running benchmark_qen
+PASS benchmark_qen
+---- useful tail for benchmark_qen ----
+@  33322350ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running waveform_pwm_compare
+PASS waveform_pwm_compare
+---- useful tail for waveform_pwm_compare ----
+@   5874350ns | [UART] AMCP ID: 0x414D4350
+@   8162350ns | [UART] PWM waveform compare done
+@   8184850ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running motor_pid_closed_loop
+PASS motor_pid_closed_loop
+---- useful tail for motor_pid_closed_loop ----
+@   2410750ns | [QEN_PLANT] Motor plant started
+@  83852950ns | [QEN_PLANT] Motor plant stopped after 16281 windows
+@ 138332000ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running buck_pid_demo
+PASS buck_pid_demo
+---- useful tail for buck_pid_demo ----
+@   2047350ns | [PWM_RES] Resolution sweep started: clk=100MHz pwm=1MHz period=100 cycles
+@  67792350ns | [PWM_RES] observed_levels=101 min_high=0 max_high=100 expected_levels=101 step_percent=1
+@  67792350ns | [PWM_RES] PASS: 1% duty resolution verified at 1 MHz PWM
+@  69740850ns | [BUCK_PID] Closed-loop buck plant started
+@  69740850ns | [BUCK_PID] Vin=1200 mV target=700 mV PWM_period=100 cycles resolution=1%
+@  69745850ns | [BUCK_PID] n=1 high=0 duty_x1000=0 target_from_pwm_mV=0 vout_mV=0 adc=0 err_to_ref_mV=700
+@  69750850ns | [BUCK_PID] n=2 high=0 duty_x1000=0 target_from_pwm_mV=0 vout_mV=0 adc=0 err_to_ref_mV=700
+@  69755850ns | [BUCK_PID] n=3 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=2 adc=2 err_to_ref_mV=698
+@  69760850ns | [BUCK_PID] n=4 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=3 adc=3 err_to_ref_mV=697
+@  69765850ns | [BUCK_PID] n=5 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=4 adc=3 err_to_ref_mV=696
+@  69770850ns | [BUCK_PID] n=6 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=5 adc=4 err_to_ref_mV=695
+@  69775850ns | [BUCK_PID] n=7 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=6 adc=5 err_to_ref_mV=694
+@  69780850ns | [BUCK_PID] n=8 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=7 adc=6 err_to_ref_mV=693
+@  69785850ns | [BUCK_PID] n=9 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=8 adc=7 err_to_ref_mV=692
+@  69790850ns | [BUCK_PID] n=10 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=9 adc=8 err_to_ref_mV=691
+@  69795850ns | [BUCK_PID] n=11 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=9 adc=8 err_to_ref_mV=691
+@  69800850ns | [BUCK_PID] n=12 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=9 adc=8 err_to_ref_mV=691
+@  69805850ns | [BUCK_PID] n=13 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=9 adc=8 err_to_ref_mV=691
+@  69810850ns | [BUCK_PID] n=14 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=9 adc=8 err_to_ref_mV=691
+@  69815850ns | [BUCK_PID] n=15 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=9 adc=8 err_to_ref_mV=691
+@  69820850ns | [BUCK_PID] n=16 high=1 duty_x1000=10 target_from_pwm_mV=12 vout_mV=9 adc=8 err_to_ref_mV=691
+@  71020850ns | [BUCK_PID] n=256 high=3 duty_x1000=30 target_from_pwm_mV=36 vout_mV=33 adc=28 err_to_ref_mV=667
+@  72300850ns | [BUCK_PID] n=512 high=5 duty_x1000=50 target_from_pwm_mV=60 vout_mV=57 adc=49 err_to_ref_mV=643
+@  73580850ns | [BUCK_PID] n=768 high=8 duty_x1000=80 target_from_pwm_mV=96 vout_mV=93 adc=79 err_to_ref_mV=607
+@  74860850ns | [BUCK_PID] n=1024 high=10 duty_x1000=100 target_from_pwm_mV=120 vout_mV=117 adc=100 err_to_ref_mV=583
+@  76140850ns | [BUCK_PID] n=1280 high=13 duty_x1000=130 target_from_pwm_mV=156 vout_mV=150 adc=128 err_to_ref_mV=550
+@  77420850ns | [BUCK_PID] n=1536 high=15 duty_x1000=150 target_from_pwm_mV=180 vout_mV=177 adc=151 err_to_ref_mV=523
+@  78700850ns | [BUCK_PID] n=1792 high=17 duty_x1000=170 target_from_pwm_mV=204 vout_mV=201 adc=171 err_to_ref_mV=499
+@  79980850ns | [BUCK_PID] n=2048 high=20 duty_x1000=200 target_from_pwm_mV=240 vout_mV=237 adc=202 err_to_ref_mV=463
+@  81260850ns | [BUCK_PID] n=2304 high=22 duty_x1000=220 target_from_pwm_mV=264 vout_mV=261 adc=223 err_to_ref_mV=439
+@  82540850ns | [BUCK_PID] n=2560 high=25 duty_x1000=250 target_from_pwm_mV=300 vout_mV=297 adc=253 err_to_ref_mV=403
+@  83820850ns | [BUCK_PID] n=2816 high=27 duty_x1000=270 target_from_pwm_mV=324 vout_mV=321 adc=274 err_to_ref_mV=379
+@  85100850ns | [BUCK_PID] n=3072 high=29 duty_x1000=290 target_from_pwm_mV=348 vout_mV=345 adc=294 err_to_ref_mV=355
+@  86380850ns | [BUCK_PID] n=3328 high=32 duty_x1000=320 target_from_pwm_mV=384 vout_mV=381 adc=325 err_to_ref_mV=319
+@  87660850ns | [BUCK_PID] n=3584 high=34 duty_x1000=340 target_from_pwm_mV=408 vout_mV=405 adc=345 err_to_ref_mV=295
+@  88940850ns | [BUCK_PID] n=3840 high=37 duty_x1000=370 target_from_pwm_mV=444 vout_mV=441 adc=376 err_to_ref_mV=259
+@  90220850ns | [BUCK_PID] n=4096 high=39 duty_x1000=390 target_from_pwm_mV=468 vout_mV=465 adc=396 err_to_ref_mV=235
+@  91500850ns | [BUCK_PID] n=4352 high=41 duty_x1000=410 target_from_pwm_mV=492 vout_mV=489 adc=417 err_to_ref_mV=211
+@  92780850ns | [BUCK_PID] n=4608 high=44 duty_x1000=440 target_from_pwm_mV=528 vout_mV=525 adc=448 err_to_ref_mV=175
+@  94060850ns | [BUCK_PID] n=4864 high=46 duty_x1000=460 target_from_pwm_mV=552 vout_mV=549 adc=468 err_to_ref_mV=151
+@  95340850ns | [BUCK_PID] n=5120 high=49 duty_x1000=490 target_from_pwm_mV=588 vout_mV=585 adc=499 err_to_ref_mV=115
+@  96620850ns | [BUCK_PID] n=5376 high=51 duty_x1000=510 target_from_pwm_mV=612 vout_mV=609 adc=519 err_to_ref_mV=91
+@  97900850ns | [BUCK_PID] n=5632 high=54 duty_x1000=540 target_from_pwm_mV=648 vout_mV=635 adc=541 err_to_ref_mV=65
+@  99180850ns | [BUCK_PID] n=5888 high=56 duty_x1000=560 target_from_pwm_mV=672 vout_mV=669 adc=570 err_to_ref_mV=31
+@ 100460850ns | [BUCK_PID] n=6144 high=57 duty_x1000=570 target_from_pwm_mV=684 vout_mV=681 adc=581 err_to_ref_mV=19
+@ 101740850ns | [BUCK_PID] n=6400 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 103020850ns | [BUCK_PID] n=6656 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 104300850ns | [BUCK_PID] n=6912 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 105580850ns | [BUCK_PID] n=7168 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 106860850ns | [BUCK_PID] n=7424 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 108140850ns | [BUCK_PID] n=7680 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 109420850ns | [BUCK_PID] n=7936 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 110700850ns | [BUCK_PID] n=8192 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 111980850ns | [BUCK_PID] n=8448 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 113260850ns | [BUCK_PID] n=8704 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=693 adc=591 err_to_ref_mV=7
+@ 114540850ns | [BUCK_PID] n=8960 high=59 duty_x1000=590 target_from_pwm_mV=708 vout_mV=705 adc=601 err_to_ref_mV=-5
+@ 115820850ns | [BUCK_PID] n=9216 high=59 duty_x1000=590 target_from_pwm_mV=708 vout_mV=705 adc=601 err_to_ref_mV=-5
+@ 117100850ns | [BUCK_PID] n=9472 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 118380850ns | [BUCK_PID] n=9728 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 119660850ns | [BUCK_PID] n=9984 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 120940850ns | [BUCK_PID] n=10240 high=59 duty_x1000=590 target_from_pwm_mV=708 vout_mV=705 adc=601 err_to_ref_mV=-5
+@ 122220850ns | [BUCK_PID] n=10496 high=59 duty_x1000=590 target_from_pwm_mV=708 vout_mV=705 adc=601 err_to_ref_mV=-5
+@ 123500850ns | [BUCK_PID] n=10752 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 124780850ns | [BUCK_PID] n=11008 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 126060850ns | [BUCK_PID] n=11264 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 127340850ns | [BUCK_PID] n=11520 high=59 duty_x1000=590 target_from_pwm_mV=708 vout_mV=705 adc=601 err_to_ref_mV=-5
+@ 128620850ns | [BUCK_PID] n=11776 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 129900850ns | [BUCK_PID] n=12032 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 131180850ns | [BUCK_PID] n=12288 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 132460850ns | [BUCK_PID] n=12544 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 133740850ns | [BUCK_PID] n=12800 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 135020850ns | [BUCK_PID] n=13056 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 136300850ns | [BUCK_PID] n=13312 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 137580850ns | [BUCK_PID] n=13568 high=58 duty_x1000=580 target_from_pwm_mV=696 vout_mV=699 adc=596 err_to_ref_mV=1
+@ 137730850ns | [BUCK_PID] Closed-loop buck plant stopped after 13598 PWM periods, final_vout_mV=699 final_err_mV=1
+@ 139702500ns | [JTAG] Simulation finished: SUCCESS
+============================================================
+Running print_config
+PASS print_config
+---- useful tail for print_config ----
+@  30992900ns | [JTAG] Simulation finished: SUCCESS

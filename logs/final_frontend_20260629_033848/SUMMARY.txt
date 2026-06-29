@@ -1,0 +1,66 @@
+============================================================
+Final frontend/regression summary
+TIME: Mon Jun 29 03:43:19 AM CEST 2026
+ROOT: /scratch/vlsi2_12fs26/reference_flow
+LOGDIR: /scratch/vlsi2_12fs26/reference_flow/logs/final_frontend_20260629_033848
+USE_OSEDA: 1
+RUN_TECH_SETUP: 0
+RUN_LEGACY_QEN_VELOCITY: 1
+============================================================
+
+PASS (49):
+  tool_check
+  source_inclusion
+  rtl_pwm_core_basic
+  rtl_pwm_core_file
+  rtl_qen_core_file
+  rtl_qen_core_velocity_stress
+  rtl_qen_core_velocity_legacy
+  sw_make
+  verilator_build_helloworld
+  build_print_config
+  verilator_print_config
+  build_test_soc_ctrl
+  verilator_test_soc_ctrl
+  build_test_uart
+  verilator_test_uart
+  build_test_gpio
+  verilator_test_gpio
+  build_test_clint
+  verilator_test_clint
+  build_test_interrupts
+  verilator_test_interrupts
+  build_test_compute
+  verilator_test_compute
+  build_test_obi_timer
+  verilator_test_obi_timer
+  build_test_sram
+  verilator_test_sram
+  build_test_pwm
+  verilator_test_pwm
+  build_test_qen
+  verilator_test_qen
+  build_test_qen_verbose
+  verilator_test_qen_verbose
+  build_test_qen_gpio
+  verilator_test_qen_gpio
+  build_test_qen_gpio_verbose
+  verilator_test_qen_gpio_verbose
+  build_benchmark_pwm
+  verilator_benchmark_pwm
+  build_benchmark_qen
+  verilator_benchmark_qen
+  build_waveform_pwm_compare
+  verilator_waveform_pwm_compare
+  build_motor_pid_closed_loop
+  verilator_motor_pid_closed_loop
+  build_buck_pid_demo
+  verilator_buck_pid_demo
+  build_power_amcp_stress
+  build_power_sw_pwm_stress
+
+SKIP (1):
+  technology_setup_disabled
+
+FAIL (0):
+  

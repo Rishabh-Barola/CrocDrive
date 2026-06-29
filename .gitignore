@@ -80,3 +80,98 @@
 #/openroad/src
 #yosys
 /yosys/out
+
+# --- Generated simulation files ---
+*.vcd
+*.fst
+*.wlf
+transcript
+vish_stacktrace.vstf
+obj_dir/
+work/
+
+# --- Software build outputs ---
+sw/build/
+sw/bin/**/*.elf
+sw/bin/**/*.dump
+# keep .hex if desired for reproducibility; remove next line if you want hex committed
+# sw/bin/**/*.hex
+
+# --- Large/generated logs ---
+*.log
+*.rpt-*.rpt
+
+# --- Temporary/debug directories ---
+tmp/
+CLEANUP_QUARANTINE_*/
+*_backup_*/
+*.bak
+*.bak_*
+*.before_*
+
+# --- Tool generated caches ---
+.DS_Store
+__pycache__/
+*.pyc
+
+# Generated simulator outputs
+*.vcd
+*.fst
+*.wlf
+transcript
+vish_stacktrace.vstf
+obj_dir/
+work/
+
+# Verilator / Questa generated directories
+verilator/obj_dir/
+vsim/work/
+rtl/user_domain/tb/**/obj_dir/
+
+# Software build outputs
+sw/build/
+sw/bin/**/*.elf
+sw/bin/**/*.dump
+
+# Keep hex files if wanted for reproducibility.
+# sw/bin/**/*.hex
+
+# Physical-flow bulky debug/checkpoint folders
+openroad/BEFORE_RESUME_*/
+openroad/FINAL_LOCK_*/
+openroad/save/
+openroad/logs/
+yosys/tmp/
+yosys/reports/
+yosys/out/
+klayout/drc/out/
+calibre/lvs/CalibreRRLog.*
+
+# Logs and scratch
+*.log
+*.rpt-*.rpt
+tmp/
+.hash
+tree.txt
+tree_ref.txt
+
+# Backup/debug snapshots
+backup_current_openroad_scripts_*/
+power_analysis/
+*.bak
+*.bak_*
+*.before_*
+*.before_*
+
+# Python/cache/macOS
+__pycache__/
+*.pyc
+.DS_Store
+
+# Required VLSI2 submission config
+!.cockpitrc
+
+# Generated RTL unit-test outputs
+rtl/user_domain/tb/**/obj_dir/
+rtl/user_domain/tb/**/*.fst
+rtl/user_domain/tb/obj_dir/

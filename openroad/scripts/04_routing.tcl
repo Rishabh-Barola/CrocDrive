@@ -116,6 +116,9 @@
 # utl::report "###############################################################################"
 # utl::report "# Stage 04 complete: Checkpoint saved to ${save_dir}/04_${proj_name}.routed.zip"
 # utl::report "###############################################################################"
+
+
+
 # Copyright 2023 ETH Zurich and University of Bologna.
 
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
@@ -188,7 +191,7 @@ utl::report "###################################################################
 
 # Reduce TM1 usage. TopMetal1 has coarse tracks and is also important for PDN.
 
-set_global_routing_layer_adjustment Metal2-Metal3 0.30
+
 set_global_routing_layer_adjustment TopMetal1 0.20
 set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
@@ -213,7 +216,9 @@ report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_
 # Do not use aggressive two-pass repair or -max_wire_length here.
 
 utl::report "Perform conservative DRV repair"
-repair_design -slew_margin 10 -cap_margin 10 -verbose
+# repair_design -slew_margin 10 -cap_margin 10 -verbose
+repair_design -verbose
+
 
 utl::report "Report DRV after repair_design"
 report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_after_repair_design.rpt
@@ -223,8 +228,8 @@ report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_
 # Keep hold margin modest to avoid unnecessary buffer insertion.
 
 utl::report "Repair setup and hold violations"
-repair_timing -skip_pin_swap -setup -verbose -repair_tns 100
-repair_timing -skip_pin_swap -hold -hold_margin 0.1 -verbose -repair_tns 100
+repair_timing -skip_pin_swap -setup -setup_margin 0.15 -verbose -repair_tns 100
+repair_timing -skip_pin_swap -hold -hold_margin 0.15 -verbose -repair_tns 100
 
 utl::report "Report DRV after timing repair"
 report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_after_timing_repair.rpt
@@ -235,9 +240,6 @@ global_route -start_incremental -allow_congestion
 # Legalize cells inserted/resized by repair_design and repair_timing.
 
 detailed_placement
-
-utl::report "Check placement after legalization"
-check_placement -verbose
 
 # Reroute only modified nets.
 
@@ -254,17 +256,74 @@ report_image "04-01_${proj_name}.grt_repaired" true true false true
 utl::report "Report DRV after repaired global route"
 report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_after_grt_repaired.rpt
 
+# utl::report "###############################################################################"
+# utl::report "# 04-02: Detailed Route"
+# utl::report "###############################################################################"
+
+# # Repair antennas before detailed routing.
+
+# repair_antennas -ratio_margin 30 -iterations 5
+
+# utl::report "Report DRV after antenna repair"
+# report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_after_antennas_no_estimate.rpt
+# save_checkpoint 04-02_${proj_name}.after_antennas
+# utl::report "Report DRV after antenna repair"
+
+
+# utl::report "Detailed route"
+# set_thread_count 8
+# detailed_route -output_drc ${report_dir}/04_${proj_name}_route_drc.rpt -droute_end_iter 30 -drc_report_iter_step 5 -save_guide_updates -clean_patches -verbose 1
+
+# utl::report "Report DRV immediately after detailed route"
+# report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_after_detailed_route.rpt
+
+# utl::report "Saving detailed route"
+# save_checkpoint 04_${proj_name}.routed
+
+# utl::report "Report final routed metrics"
+# report_metrics "04_${proj_name}.routed"
+# report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_routed_violators.rpt
+
+# report_image "04_${proj_name}.routed" true false false true
+
 utl::report "###############################################################################"
-utl::report "# 04-02: Detailed Route"
+utl::report "# 04-02: Detailed Route / Antenna / Detailed Route"
 utl::report "###############################################################################"
 
-# Repair antennas before detailed routing.
-
-repair_antennas -ratio_margin 30 -iterations 5
-
-utl::report "Detailed route"
+utl::report "First detailed route before antenna repair"
 set_thread_count 8
-detailed_route -output_drc ${report_dir}/04_${proj_name}_route_drc.rpt -droute_end_iter 30 -drc_report_iter_step 5 -save_guide_updates -clean_patches -verbose 1
+detailed_route \
+  -output_drc ${report_dir}/04_${proj_name}_route_drc1.rpt \
+  -droute_end_iter 30 \
+  -drc_report_iter_step 5 \
+  -save_guide_updates \
+  -clean_patches \
+  -verbose 1
+
+utl::report "Report DRV after first detailed route"
+report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_after_first_detailed_route.rpt
+
+save_checkpoint 04-02_${proj_name}.first_detailed_route
+
+utl::report "Repair antennas after first detailed route"
+repair_antennas -ratio_margin 30 -iterations 10
+
+utl::report "Report DRV after antenna repair"
+report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_after_antennas_no_estimate.rpt
+save_checkpoint 04-02_${proj_name}.after_antennas
+
+utl::report "Second detailed route after antenna repair"
+set_thread_count 8
+detailed_route \
+  -output_drc ${report_dir}/04_${proj_name}_route_drc2.rpt \
+  -droute_end_iter 30 \
+  -drc_report_iter_step 5 \
+  -save_guide_updates \
+  -clean_patches \
+  -verbose 1
+
+utl::report "Report DRV immediately after second detailed route"
+report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_after_detailed_route.rpt
 
 utl::report "Saving detailed route"
 save_checkpoint 04_${proj_name}.routed
@@ -274,6 +333,7 @@ report_metrics "04_${proj_name}.routed"
 report_check_types -max_slew -max_cap -max_fanout -violators > ${report_dir}/04_drv_routed_violators.rpt
 
 report_image "04_${proj_name}.routed" true false false true
+
 
 utl::report "###############################################################################"
 utl::report "# Stage 04 complete: Checkpoint saved to ${save_dir}/04_${proj_name}.routed.zip"
