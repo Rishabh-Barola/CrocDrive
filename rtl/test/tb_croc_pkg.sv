@@ -12,13 +12,13 @@ package tb_croc_pkg;
 
 
 
-  // localparam realtime ClkPeriodSys  = 10ns;    // 100 MHz, matches final SDC
-  // localparam realtime ClkPeriodJtag = 25ns;    // 40 MHz, matches final SDC
-  // localparam realtime ClkPeriodRef  = 50ns;    // 20 MHz, matches final SDC
+  localparam realtime ClkPeriodSys  = 10ns;    // 100 MHz, matches final SDC
+  localparam realtime ClkPeriodJtag = 25ns;    // 40 MHz, matches final SDC
+  localparam realtime ClkPeriodRef  = 50ns;    // 20 MHz, matches final SDC
 
-  localparam realtime ClkPeriodSys  = 50ns;    // 20 MHz
-  localparam realtime ClkPeriodJtag = 50ns;    // 20 MHz
-  localparam realtime ClkPeriodRef  = 30518ns; // 32 KiHz
+  // localparam realtime ClkPeriodSys  = 50ns;    // 20 MHz
+  // localparam realtime ClkPeriodJtag = 50ns;    // 20 MHz
+  // localparam realtime ClkPeriodRef  = 30518ns; // 32 KiHz
 
 
   // Number of clock cycles the reset is applied
