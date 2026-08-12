@@ -1,195 +1,538 @@
-# Croc System-on-Chip
+# CrocDrive
 
-A simple SoC for education using PULP IPs. Croc includes all scripts necessary to produce a nearly finished chip in [IHPs open-source 130nm technology](https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main).
+**CrocDrive** extends the [Croc RISC-V SoC](https://github.com/pulp-platform/croc) with a memory-mapped **Advanced Motor-Control Peripheral (AMCP)** for deterministic embedded-control I/O.
 
-As it is oriented towards education, it forgoes some configurability to increase readability of the RTL and scripts.
+The project was developed for the **VLSI 2 course at ETH Zürich** and was taken through RTL design, verification, synthesis, place-and-route, timing analysis, power analysis, IR-drop analysis, DRC and LVS using the IHP SG13G2 130 nm technology.
 
-Croc is developed as part of the PULP project, a joint effort between ETH Zurich and the University of Bologna.
+The main design idea is to keep high-level control algorithms in software while moving timing-critical operations into hardware. CrocDrive therefore adds dedicated hardware for:
 
-Croc was successfully taped out in Nov 2024 in the chip [MLEM](http://asic.ee.ethz.ch/2024/MLEM.html), named after the sound Yoshi makes when eating a tasty fruit. MLEM's core functionality was verified on real silicon early 2026.  
-MLEM was designed and prepared for tapeout by ETHZ students as a bachelor project. The exact code and scripts used for the tapeout can be seen in the frozen [mlem-tapeout](https://github.com/pulp-platform/croc/tree/mlem-tapeout) branch.
+* PWM generation
+* quadrature-encoder decoding
+* position, direction and index tracking
+* encoder error detection
+* GPIO alternate-function routing
+* software-visible status and control registers
+
+The existing CVE2 core, OBI-based programming model and Croc pad interface are preserved.
+
+---
+
+## Project Overview
+
+CrocDrive adds an **Advanced Motor-Control Peripheral (AMCP)** inside Croc's `user_domain`.
+
+AMCP contains two main datapaths:
+
+* **PWM core** — generates deterministic PWM waveforms after one-time software configuration.
+* **QEN core** — continuously decodes quadrature A/B transitions and tracks signed position, direction, index events and invalid transitions.
+
+AMCP is exposed as a normal memory-mapped OBI subordinate, so software interacts with it using ordinary RISC-V loads and stores.
+
+The project also includes:
+
+* two enlarged 8 KiB SRAM banks for a total of 16 KiB
+* RV32MFast support in CVE2
+* standalone RTL verification
+* full-system Verilator firmware tests
+* hardware-versus-software CPU-offload benchmarks
+* motor-control and buck-converter closed-loop demonstrations
+* complete backend implementation in OpenROAD
+* final GDS generation and physical verification
+
+For the complete architecture, implementation details, verification methodology and physical-design results, see the project report in the repository.
+
+---
 
 ## Architecture
 
-![Croc block diagram](doc/croc_arch.svg)
+CrocDrive keeps the overall Croc architecture unchanged.
 
-The SoC is composed of two main parts:
+The baseline Croc domain contains the CVE2 processor, SRAM, OBI interconnect, UART, GPIO, timer, debug infrastructure and other standard peripherals. The project extends the separate `user_domain` with:
 
-- The `croc_domain` containing a CVE2 core (a more minimal fork of Ibex), SRAM, an OBI crossbar and a few simple peripherals
-- The `user_domain` where students are invited to add their own designs or other open-source designs (peripherals, accelerators...)
+* a user identification ROM
+* the AMCP peripheral
 
-The main interconnect is OBI, you can find [the spec online](https://github.com/openhwgroup/obi/blob/072d9173c1f2d79471d6f2a10eae59ee387d4c6f/OBI-v1.6.0.pdf).
+AMCP is connected as an OBI subordinate and therefore does not require modifications to the processor instruction set.
 
-The various IPs of the SoC (UART, OBI, debug-module, timer...) come from other PULP repositories and are managed by [Bender](https://github.com/pulp-platform/bender).
-To make it easier to browse and understand, only used or important building blocks are included in `rtl/<IP>`. You may want to explore the repositories of the respective IPs to find their documentation or additional functionality, the urls are in `Bender.yml`.
+The PWM output reaches the chip boundary through the existing GPIO interface rather than through additional pads.
 
-## Configuration
+### GPIO assignment
 
-The main SoC configurations are in `rtl/croc_pkg.sv`:
+| GPIO  | CrocDrive function            |
+| ----- | ----------------------------- |
+| GPIO0 | PWM alternate-function output |
+| GPIO1 | Quadrature encoder A          |
+| GPIO2 | Quadrature encoder B          |
+| GPIO3 | Quadrature encoder Z / index  |
 
-| Parameter           | Default          | Function                                              |
-|---------------------|------------------|-------------------------------------------------------|
-| `PulpJtagIdCode`    | `32'h1C0C_5DB3`  | Debug module ID code                                  |
-| `iDMAEnable`        | `0`              | Enable optional DMA (see `rtl/idma`)                  |
-| `NumSramBanks`      | `2`              | Number of memory banks                                |
-| `SramBankNumWords`  | `512`            | Number of 32bit words in a memory bank                |
-| `BootAddr`          | `32'h1000_0000`  | Default boot address set in 'soc_ctrl' register       |
-| `CrocAddrMap`       | see 'Memory Map' | Routing rules used for the main crossbar              |
-| `PeriphAddrMap`     | see 'Memory Map' | Routing rules used for the peripheral demuliplexer    |
+When the AMCP alternate function is disabled, the normal Croc GPIO behavior is preserved.
 
-Further configurations can be made in `rtl/core_wrap.sv` (core specifics) and `rtl/croc_soc.sv` (connectivity between domains and to/from outside).
-
-The SRAMs are instantiated via a technology wrapper called `tc_sram_impl` (tc: tech_cells), the technology-independent implementation is in `rtl/tech_cells_generic/tc_sram_impl.sv`. A number of SRAM configurations are implemented using IHP130 SRAM memories in `ihp13/tc_sram_impl.sv`. If an unimplemented SRAM configuration is instantiated it will result in a `tc_sram_blackbox` module which can then be easily identified from the synthesis results.
-
-## Bootmodes
-
-Currently the only way to boot is via JTAG.
+---
 
 ## Memory Map
 
-If possible, the memory map should remain compatible with [Cheshire's memory map](https://pulp-platform.github.io/cheshire/um/arch/#memory-map).  
-Further each new subordinate should occupy multiples of 4KB of the address space (`32'h0000_1000`).
+The relevant CrocDrive memory regions are:
 
-The address map of the default configuration is as follows:
+| Start address | End address   | Region                  |
+| ------------- | ------------- | ----------------------- |
+| `0x1000_0000` | `0x1000_2000` | SRAM bank 0 — 8 KiB     |
+| `0x1000_2000` | `0x1000_4000` | SRAM bank 1 — 8 KiB     |
+| `0x2000_0000` | `0x2000_1000` | User identification ROM |
+| `0x2000_1000` | `0x2000_2000` | AMCP                    |
 
-| Start Address   | Stop Address    | Description                                |
-|-----------------|-----------------|--------------------------------------------|
-| `32'h0000_0000` | `32'h0004_0000` | Debug module (JTAG)                        |
-| `32'h0200_0000` | `32'h0200_4000` | Bootrom                                    |
-| `32'h0204_0000` | `32'h0208_0000` | CLINT peripheral                           |
-| `32'h0300_0000` | `32'h0300_1000` | SoC control/info registers                 |
-| `32'h0300_2000` | `32'h0300_3000` | UART peripheral                            |
-| `32'h0300_5000` | `32'h0300_6000` | GPIO peripheral                            |
-| `32'h0300_A000` | `32'h0300_B000` | Timer peripheral                           |
-| `32'h0300_B000` | `32'h0300_C000` | (optional) DMA configuration               |
-| `32'h1000_0000` | `+SRAM_SIZE`    | Memory banks (SRAM)                        |
-| `32'h2000_0000` | `32'h8000_0000` | Passthrough to user domain                 |
-| `32'h2000_0000` | `32'h2000_1000` | reserved for user ROM text*                |
+The user ROM stores a zero-terminated identification string while AMCP occupies its own 4 KiB OBI address window.
 
-*If people modify Croc we suggest they add a ROM at this address containing additional information
-like the names of the developers, a project link or similar. This can then be written out via UART.  
-We ask people to format the ROM like a C string with zero termination and using ASCII encoding if feasible.  
-The [MLEM user ROM](https://github.com/pulp-platform/croc/blob/mlem-tapeout/rtl/user_domain/user_rom.sv) may serve as one possible reference implementation.
+---
 
-## Flow
+## AMCP Register Map
 
-```mermaid
-graph LR;
-  Bender-->Yosys;
-  Yosys-->OpenRoad;
-  OpenRoad-->KLayout;
-```
+AMCP base address:
 
-1. Bender provides a list of SystemVerilog files
-2. Yosys parses, elaborates, optimizes and maps the design to the technology cells
-3. The netlist, constraints and floorplan are loaded into OpenRoad for Place&Route
-4. The design as def is read by klayout and the geometry of the cells and macros are merged
+`0x2000_1000`
 
-### Example Results
+| Offset  | Register             | Access    | Purpose                              |
+| ------- | -------------------- | --------- | ------------------------------------ |
+| `0x000` | `AMCP_ID`            | R         | Peripheral identifier                |
+| `0x004` | `AMCP_VERSION`       | R         | Peripheral version                   |
+| `0x008` | `AMCP_PINMUX`        | R/W       | GPIO alternate-function control      |
+| `0x00C` | `AMCP_STATUS`        | R         | Global status                        |
+| `0x010` | `PWM_CTRL`           | R/W       | PWM enable and polarity              |
+| `0x014` | `PWM_PERIOD`         | R/W       | Configured PWM period                |
+| `0x018` | `PWM_DUTY`           | R/W       | Configured PWM duty                  |
+| `0x01C` | `PWM_COUNTER`        | R         | Current PWM counter                  |
+| `0x020` | `PWM_STATUS`         | R/W1C     | Sticky PWM status flags              |
+| `0x024` | `PWM_DUTY_ACTIVE`    | R         | Active duty value                    |
+| `0x028` | `PWM_PERIOD_ACTIVE`  | R         | Active period value                  |
+| `0x040` | `QEN_CTRL`           | R/W + W1P | QEN configuration and clear commands |
+| `0x044` | `QEN_STATUS`         | R         | QEN state and status                 |
+| `0x048` | `QEN_POSITION`       | R         | Signed position                      |
+| `0x04C` | `QEN_VELOCITY`       | R         | Position change over sample window   |
+| `0x050` | `QEN_DELTA`          | R         | Last sampled position delta          |
+| `0x054` | `QEN_INDEX_POSITION` | R         | Position captured on index pulse     |
+| `0x058` | `QEN_ERROR_COUNT`    | R         | Invalid-transition count             |
+| `0x05C` | `QEN_SAMPLE_PERIOD`  | R/W       | Velocity sample interval             |
+| `0x060` | `QEN_SIM_INPUT`      | R/W       | Software-driven `{Z,B,A}` inputs     |
+| `0x064` | `QEN_DEBUG`          | R         | Decoder/debug state                  |
 
-|Cell/Module placement                      |  Routing                             |
-|:-----------------------------------------:|:------------------------------------:|
-|![Chip module view](doc/croc_modules.jpg)  |  ![Chip routed](doc/croc_routed.jpg) |
+---
+
+## PWM Core
+
+The PWM generator uses a 16-bit counter and independent configuration and active registers.
+
+Software writes the requested period and duty values, while the PWM core transfers them to the active datapath only at safe update points. This prevents a mid-period register write from corrupting the currently generated pulse.
+
+For an active period `N`:
+
+`f_PWM = f_clk / N`
+
+and the duty-cycle step is:
+
+`1 / N`
+
+For example, at a 100 MHz system clock with a period of 100 cycles, the PWM frequency is 1 MHz with 1% duty-cycle resolution.
+
+The implementation also handles edge conditions explicitly:
+
+* period equal to zero disables the active waveform
+* duty greater than the period is clamped to the period
+* disabling PWM forces the output low
+
+---
+
+## Quadrature Encoder Core
+
+The QEN core continuously observes the A/B encoder signals and classifies each state transition as:
+
+* forward
+* reverse
+* unchanged
+* invalid
+
+Valid transitions increment or decrement the signed position counter. Invalid two-bit transitions increment an error counter without changing the position.
+
+The optional Z/index input captures the current encoder position and can optionally reset the live position counter.
+
+QEN also computes position change over a configurable sampling interval, allowing firmware to obtain a digital velocity-like measurement without decoding every edge in software.
+
+For deterministic verification, the encoder inputs can either come from GPIO1–GPIO3 or from the software-controlled `QEN_SIM_INPUT` register.
+
+---
+
+## Verification
+
+CrocDrive is verified at several levels.
+
+### Standalone RTL verification
+
+The PWM and QEN cores are first tested independently of the full SoC.
+
+Relevant testbench directories include:
+
+* `rtl/user_domain/tb/`
+* `rtl/user_domain/tb/pwm_core_file_tb/`
+* `rtl/user_domain/tb/qen_core_file_tb/`
+* `rtl/user_domain/tb/qen_core_velocity_stress_tb/`
+
+Python scripts generate deterministic stimulus and expected-response vectors.
+
+The QEN file-driven regression includes directed cases followed by 10,000 deterministic random vectors.
+
+### Full-system firmware verification
+
+The complete Croc SoC is then simulated with C firmware using Verilator.
+
+The main AMCP tests include:
+
+* `test_pwm`
+* `test_qen`
+* `test_qen_verbose`
+* `test_qen_gpio`
+* `test_qen_gpio_verbose`
+* `benchmark_pwm`
+* `benchmark_qen`
+* `waveform_pwm_compare`
+
+The regression also runs the original Croc tests for peripherals such as UART, GPIO, CLINT, SRAM and SoC control to check that the AMCP integration does not break baseline functionality.
+
+### System demonstrations
+
+Two higher-level demonstrations are included:
+
+* `motor_pid_closed_loop`
+* `buck_pid_demo`
+
+The motor example combines QEN feedback with firmware control and PWM actuation.
+
+The buck example uses the real AMCP PWM output together with a testbench plant model and ADC-like GPIO feedback. The analog power stage itself is modeled in simulation; CrocDrive implements the digital control interface.
+
+---
+
+## CPU-Offload Results
+
+A central goal of CrocDrive is to reduce continuous CPU involvement in timing-sensitive I/O.
+
+### PWM
+
+| Generated periods | Software PWM cycles | Hardware setup cycles | CPU involvement reduction |
+| ----------------: | ------------------: | --------------------: | ------------------------: |
+|                10 |               1,643 |                    13 |                      126× |
+|             1,000 |             164,003 |                    13 |                   12,615× |
+|            10,000 |           1,640,003 |                    13 |                  126,154× |
+
+The reduction refers to CPU work, not to PWM frequency. Hardware PWM is configured once and then continues autonomously.
+
+A separate fixed-window test also showed that hardware PWM allowed the CPU to execute background work while maintaining the programmed waveform.
+
+### QEN
+
+| Encoder transitions | Software cycles | Hardware setup cycles |
+| ------------------: | --------------: | --------------------: |
+|                 100 |           2,124 |                   228 |
+|                 400 |           8,424 |                   228 |
+|               1,600 |          33,624 |                   228 |
+
+For the 1,600-transition case, this corresponds to approximately 147.5× lower CPU involvement while producing the same final encoder position.
+
+---
+
+## Physical Implementation
+
+The chip was implemented using the VLSI 2 backend flow:
+
+**Bender → Yosys → OpenROAD → KLayout**
+
+Important physical-design changes included:
+
+* replacement of the original SRAM configuration with two `1024x64` SRAM macros
+* updated SRAM floorplanning
+* increased macro halo
+* standard-cell placement padding
+* correction of the mapped sequential-cell clock-pin name used during CTS
+* clock-tree tuning
+* conservative electrical-rule and timing repair
+* antenna repair
+* detailed routing
+* final GDS generation
+* DRC and LVS verification
+
+### Submitted implementation
+
+| Metric                      | Result                 |
+| --------------------------- | ---------------------- |
+| Technology                  | IHP SG13G2, 130 nm     |
+| Supply                      | 1.2 V                  |
+| System clock target         | 100 MHz                |
+| Setup violations            | 0                      |
+| Hold violations             | 0                      |
+| Worst reported timing slack | approximately 1.13 ns  |
+| OpenROAD die area           | 4.629 mm²              |
+| Core area                   | 2.200 mm²              |
+| Total reported area         | 2.638 mm²              |
+| Active area                 | 0.995 mm²              |
+| Standard-cell logic         | approximately 82.8 kGE |
+| AMCP area                   | approximately 5.03 kGE |
+| Final post-layout power     | approximately 67.8 mW  |
+
+Residual OpenROAD electrical diagnostics remained for slew, capacitance and fanout. These are separate from GDS-level physical verification.
+
+The final design passes LVS. The remaining DRC markers are confined to known off-grid/min-grid geometry inside the supplied SRAM macros; no project-specific GDS violations were observed outside those macros.
+
+---
+
+## Power and IR Drop
+
+Representative workload-based VCD power results were:
+
+| Workload            |       Full-chip power |
+| ------------------- | --------------------: |
+| Software PWM stress | approximately 52.3 mW |
+| AMCP stress         | approximately 53.2 mW |
+
+The approximately 0.9 mW difference corresponds to about 1.7% full-chip overhead in these workloads.
+
+The main benefit of AMCP is therefore deterministic timing and CPU offload rather than an instantaneous reduction in full-chip power.
+
+With the 15 pF I/O-load model, final post-layout power was approximately 67.8 mW, with the pad ring and clock network dominating the total.
+
+Representative PDN analysis gave:
+
+* worst VDD drop: approximately 17.1 mV
+* worst VSS bounce: approximately 16.5 mV
+
+---
+
+# Building and Testing CrocDrive
 
 ## Requirements
 
-We are using the excellent docker container maintained by Harald Pretl. If you get stuck with installing the tools, we urge you to check the [Tool Repository](https://github.com/iic-jku/IIC-OSIC-TOOLS).  
-The current supported version is 2025.12, no other version is officially supported.
+The project uses the same overall tool environment as Croc.
 
-### ETHZ systems
+On ETH systems, the recommended setup uses the internal IHP technology integration through `icdesign`.
 
-ETHZ Design Center maintains an internal version of the IHP PDK, with integrations into all tools we have access to. For this reason if you work on the ETH systems it is recommended to use the `icdesign` tool (cockpit) instead of the liked Github repo.  
-You can directly create a cockpit directory inside the croc directory:
+From the repository root:
 
 ```sh
-# Make sure you are in <somedir>/croc
-# the checked-out repository
 icdesign ihp13 -nogui
 ```
 
-The setup is guided by the `.cockpitrc` configuration file. If you need different macros or another version of the standard cells you can change it accordingly.
-
-Yyou may prefer to just enter a shell in the pre-installed osic-tools container using:
+The open-source tool environment can also be entered using:
 
 ```sh
 oseda bash
-# specific version eg: oseda -2025.12 bash
 ```
 
-## Getting started
+The repository uses [Bender](https://github.com/pulp-platform/bender) to manage RTL dependencies.
 
-The SoC is fully functional as-is and a simple software example is provided for simulation.
-To run the synthesis and place & route flow execute:
+Initialize dependencies before the first build:
 
 ```sh
 git submodule update --init --recursive
-cd yosys && ./run_synthesis.sh --synth
-cd ../openroad && ./run_backend.sh --all
-cd ../klayout && ./run_finishing.sh --gds
 ```
 
-To simulate you can use:
+---
+
+## Run the Complete Frontend Regression
+
+The recommended verification command is:
 
 ```sh
-cd sw && make all
-cd ../verilator && ./run_verilator.sh --build --run ../sw/bin/helloworld.hex
+./run_final_verilator_tests.sh
 ```
 
-If you have Questasim/Modelsim, you can also run:
+If the technology setup has already been performed:
 
 ```sh
-cd vsim && ./run_vsim.sh --build --run ../sw/bin/helloworld.hex
+RUN_TECH_SETUP=0 ./run_final_verilator_tests.sh
 ```
 
-All `run_` scripts have a `--help` you can use to orient yourself.
-
-### Building on Croc
-
-To add your own design, we recommend creating a new directory under `rtl/` or put single source files (small designs) into `rtl/user_domain`, then go into `Bender.yml` and add the files in the indicated places.
-This will make Bender aware of the files and any script it contains will contain your design as well.
-
-Then re-generate the default synthesis file-list:
+To disable the legacy QEN velocity regression:
 
 ```sh
-cd yosys && ./run_synthesis.sh --flist
-cd ../verilator && ./run_verilator.sh --flist
+RUN_TECH_SETUP=0 RUN_LEGACY_QEN_VELOCITY=0 ./run_final_verilator_tests.sh
 ```
 
-If you want to add an existing design and it already containts a `Bender.yml` in its repository, you can add it as a dependency in the `Bender.yml` and reading the guide below.
+Regression logs are written under:
+
+`logs/final_frontend_<timestamp>/`
+
+with a final `SUMMARY.txt`.
+
+---
+
+## Build Software Manually
+
+Build all firmware:
+
+```sh
+cd sw
+make
+```
+
+Build one test:
+
+```sh
+make bin/test/test_pwm.hex
+```
+
+Run it in Verilator:
+
+```sh
+cd ../verilator
+./run_verilator.sh --flist
+./run_verilator.sh --build --run ../sw/bin/test/test_pwm.hex
+```
+
+Once the Verilator model is built, other programs can be run directly:
+
+```sh
+./run_verilator.sh --run ../sw/bin/test/test_qen.hex
+```
+
+---
+
+## RTL-to-GDS Flow
+
+The normal Croc flow is:
+
+```sh
+cd yosys
+./run_synthesis.sh --synth
+
+cd ../openroad
+./run_backend.sh --all
+
+cd ../klayout
+./run_finishing.sh --gds
+```
+
+The repository also contains project-specific helper scripts for frontend and backend regression.
+
+Be careful when using backend cleanup scripts: some options remove existing synthesis, OpenROAD or KLayout outputs. Keep verified signoff results in a separate backup before rerunning physical implementation.
+
+---
+
+## Repository Structure
+
+| Directory    | Purpose                                                  |
+| ------------ | -------------------------------------------------------- |
+| `rtl/`       | Croc and CrocDrive RTL, including standalone testbenches |
+| `sw/`        | Firmware tests, benchmarks and demonstrations            |
+| `verilator/` | Full-system Verilator simulation                         |
+| `yosys/`     | Logic synthesis                                          |
+| `openroad/`  | Floorplanning, placement, CTS and routing                |
+| `klayout/`   | DEF-to-GDS finishing and physical verification           |
+| `ihp13/`     | IHP SG13G2 technology integration                        |
+| `doc/`       | Project documentation and report                         |
+| `logs/`      | Regression and implementation logs                       |
+
+Useful top-level scripts include:
+
+* `run_amcp_frontend.sh`
+* `run_final_verilator_tests.sh`
+* `run_backend_signoff.sh`
+
+---
+
+# About Croc
+
+[Croc](https://github.com/pulp-platform/croc) is a compact SoC designed for education and built using PULP IPs.
+
+It contains:
+
+* a CVE2 RISC-V processor
+* SRAM
+* an OBI crossbar
+* UART
+* GPIO
+* CLINT
+* timer
+* JTAG/debug infrastructure
+* a separate `user_domain` intended for student peripherals and accelerators
+
+Croc is developed as part of the [PULP project](https://pulp-platform.org/), a joint effort between ETH Zürich and the University of Bologna.
+
+The original Croc design was taped out in November 2024 as part of the [MLEM](http://asic.ee.ethz.ch/2024/MLEM.html) chip. Its core functionality was later verified on silicon.
+
+CrocDrive preserves the main Croc programming and chip interfaces while extending the user domain with the AMCP hardware described above.
+
+---
+
+## Original Croc Configuration
+
+The main Croc system configuration is defined in `rtl/croc_pkg.sv`.
+
+Important parameters include:
+
+| Parameter          | Purpose                         |
+| ------------------ | ------------------------------- |
+| `PulpJtagIdCode`   | JTAG/debug identification code  |
+| `iDMAEnable`       | Optional DMA enable             |
+| `NumSramBanks`     | Number of SRAM banks            |
+| `SramBankNumWords` | Number of 32-bit words per bank |
+| `BootAddr`         | Default boot address            |
+| `CrocAddrMap`      | Main OBI crossbar address map   |
+| `PeriphAddrMap`    | Peripheral address map          |
+
+CrocDrive modifies the SRAM configuration and user-domain address map while keeping the overall architecture compatible with Croc.
+
+---
+
+## Boot
+
+Croc currently boots through JTAG.
+
+The existing Croc boot and debug infrastructure is preserved by CrocDrive.
+
+---
 
 ## Bender
 
-The dependency manager [Bender](https://github.com/pulp-platform/bender) is used in most pulp-platform IPs.
-Usually each dependency would be in a seperate repository, each with a `Bender.yml` file to describe where the RTL files are, how you can use this dependency and which additional dependency it has.
-In the top level repository (like this SoC) you also have a `Bender.yml` file but you will commonly find a `Bender.lock` file. It contains the resolved tree of dependencies with specific commits for each. Whenever you run a command using Bender, this is the file it uses to figure out where things are.
+[Bender](https://github.com/pulp-platform/bender) manages the RTL dependencies used throughout Croc.
 
-Below is a small guide aimed at the usecase for this project. The Bender repo has a more extensive [Command Guide](https://github.com/pulp-platform/bender?tab=readme-ov-file#commands).
+`Bender.yml` describes dependencies, source files and build targets.
 
-### Checkout
+`Bender.lock` stores the exact resolved dependency revisions.
 
-Using the command `bender checkout` Bender will check the lock file and download the specified commits from the repositories (usually into a hidden `.bender` directory).
+Updating `Bender.lock` should be treated like modifying RTL: the full verification and implementation flow should be rerun afterward.
 
-### Update
+Technology-specific build contexts are selected using Bender targets such as `ihp13`.
 
-Running `bender update` on the other hand will resolve the entire tree again and re-generate the lock file (you usually have to resolve some version/revision conflicts if multiple things use the same dependency).
+---
 
-**Remember:** always test everything again if you generate a new `Bender.lock`, it is the same as modifying RTL.
+## Known Limitations
 
-### Local Versions
+* The motor and buck-converter plants are simulation models rather than analog circuitry integrated on-chip.
+* QEN velocity is a digital position change over a configurable sample interval rather than a calibrated physical velocity.
+* The software PWM benchmark uses polling-based GPIO bit-banging as the comparison baseline.
+* Residual OpenROAD slew, capacitance and fanout diagnostics remain despite clean setup and hold timing.
+* The supplied SRAM macro geometry produces known off-grid/min-grid DRC markers.
 
-For this repository, we use a subcommand called `bender vendor` together with the `vendor_package` section in `Bender.yml`.
-`bender vendor` can be used to Benderize arbitrary repositories with RTL in it. The dependencies are already 'checked out' into `rtl/<IP>`. Each file or directory from the repository is mapped to a local path in this repo.
-Fixes and changes to each IPs `rtl/<IP>/Bender.yml` are managed by `bender vendor` in `rtl/patches`.
+---
 
-If you need to update a dependency or map another file you need to edit the coresponding `vendor_package` section in `Bender.yml` and then run `bender vendor init`. Then you might need to change `rtl/<IP>/Bender.yml` to list your new file in the sources. 
-To save a fix/change as a patch, stage it in git and then run `bender vendor patch`. When prompted, add a commit message (this is used as the patches file name). Finally, commit both the patch file and the new `rtl/<IP>`.
+## Authors
 
-**Note:** using `bender vendor` in this repository to change the local versions of the IPs requires an up-to-date version of Bender. (v0.28.2 or newer)
+**Chelsea Lai**
+**Rishabh Barola**
 
-### Targets
+ETH Zürich
+VLSI 2 — 2026
 
-Another thing we use are targets (in the `Bender.yml`), together they build different views/contexts of your RTL. For example without defining any targets the technology independent cells/memories are used (in `rtl/tech_cells_generic/`) but if we use the target `ihp13` then the same modules contain a technology-specific implementation (in `ihp13/`). Similar contexts are built for different simulators and other things.
+---
+
+## Acknowledgements
+
+CrocDrive is based on the Croc SoC and the wider PULP ecosystem developed by ETH Zürich and the University of Bologna.
+
+The project uses the IHP SG13G2 open-source 130 nm technology and the ETH VLSI 2 implementation flow.
+
+---
 
 ## License
 
-Unless specified otherwise in the respective file headers, all code checked into this repository is made available under a permissive license. All hardware sources and tool scripts are licensed under the Solderpad Hardware License 0.51 (see `LICENSE.md`). All software sources are licensed under Apache 2.0.
+Unless stated otherwise in individual file headers:
+
+* hardware RTL and implementation scripts use the **Solderpad Hardware License 0.51**
+* software sources use the **Apache License 2.0**
+
+See `LICENSE.md` and the corresponding source-file headers for exact licensing information.
