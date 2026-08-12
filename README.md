@@ -512,8 +512,9 @@ Technology-specific build contexts are selected using Bender targets such as `ih
 
 ## Authors
 
-**Chelsea Lai**
+
 **Rishabh Barola**
+**Chelsea Lai**
 
 ETH Zürich
 VLSI 2 — 2026
